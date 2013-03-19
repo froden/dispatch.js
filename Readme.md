@@ -1,6 +1,6 @@
 # Dispatch.js
 
-Dispatch.js is a minimal JS library for routing hash change events to handlers, with parameters.
+Dispatch.js is a micro JS library for routing browser hash change events to handlers, with parameters.
 
 
 ## Example
