@@ -1,5 +1,3 @@
-/*global window, setInterval */
-
 ;(function(window, undefined) {
     'use strict';
 
@@ -64,7 +62,7 @@
      * Remove existing route(s).
      * Omit the argument to remove all routes.
      *
-     * @x The name, path or handler of the route to remove.
+     * @x: The name, path or handler of the route to remove.
      */
     dispatch.off = function(x) {
         if (typeof x === 'undefined') { return dispatch.reset(); }
@@ -76,7 +74,7 @@
      * ensuring that if that route is the current route,
      * the callback is still run.
      *
-     * @path The route to run.
+     * @path: The route to run.
      */
     dispatch.go = function(path) {
         var current = internal.parse(window.location.hash, {}).path;
@@ -86,9 +84,9 @@
     };
 
     /*
-     * Startup, run after each route has been added.
+     * Start at a route by changing the hash.
      *
-     * @origin Where to start, defaults to '/'.
+     * @origin: Where to start, defaults to '/'.
      */
     dispatch.start = function(origin) {
         origin = origin || '/';
@@ -101,8 +99,8 @@
      * You should not have to use this method, try using
      * dispatch.go or dispatch.start instead.
      *
-     * @path The path which should trigger a route.
-     * @params Optional parameters to pass to the handler.
+     * @path: The path which should trigger a route.
+     * @params: Optional parameters to pass to the handler.
      */
     dispatch.run = function(path, params) {
         if (!path) { path = window.location.hash; }
@@ -114,7 +112,7 @@
         var route = dispatch.route(next.path);
         if (!route) { return dispatch.fallback(); }
 
-        // Resolve fragments
+        // Resolve parameters
         var next_parts  = next.path.split('/');
         var route_parts = route.path.split('/');
         for (var i = 0; i < route_parts.length; i++) {
