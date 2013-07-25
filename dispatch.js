@@ -1,7 +1,7 @@
 /*global window, setInterval */
 
 ;(function(window, undefined) {
-    "use strict";
+    'use strict';
 
     var dispatch = window.dispatch = {}, internal = {},
         id, routes, names, paths, handlers;
@@ -10,7 +10,9 @@
         queryMatch   = /\?([^#]*)?$/,
         prefixMatch  = /^[^#]*#/,
         fragMatch    = /:([^:\\$]+)/g,
-        fragReplace  = "([^\/]+)";
+        fragReplace  = '([^\/]+)',
+        starMatch    = /\\\*([^\*\\$]+)/g,
+        starReplace  = '([^\/]*)';
 
     /*
      * Add a new route.
@@ -20,18 +22,22 @@
      * @handler: The handler function to call when this route is run.
      */
     dispatch.on = function(name, path, handler) {
-        if(arguments.length === 2) {
+        if (arguments.length === 2) {
             handler = path;
             path = name;
         }
-        if(names[name]) {
+        if (names[name]) {
             return;
         }
-        var str = "" + (path || "");
+
+        var str = '' + (path || '');
         var escaped = str
-            .replace(escapeString, "\\$&")
-            .replace(fragMatch, fragReplace);
-        var pathMatcher = new RegExp("^" + escaped + "$");
+            .replace(escapeString, '\\$&')
+            .replace(fragMatch, fragReplace)
+            .replace(starMatch, starReplace)
+            .replace(starReplace + '\\/', starReplace + '[\/]?');
+
+        var pathMatcher = new RegExp('^' + escaped + '$');
         names[name] = paths[path] = handlers[handler] = ++id;
         routes[id] = {
             name: name,
@@ -49,7 +55,7 @@
      * @x The name, path or handler of the route to remove.
      */
     dispatch.off = function(x) {
-        if(!x) { return dispatch.reset(); }
+        if (!x) { return dispatch.reset(); }
         return !!(delete routes[names[x] || paths[x] || handlers[x] || x]);
     };
 
@@ -63,18 +69,18 @@
     dispatch.go = function(path) {
         var current = internal.parse(window.location.hash, {}).path;
         var target  = internal.parse(path, {}).path;
-        if(current === target) { dispatch.run(target); }
+        if (current === target) { dispatch.run(target); }
         else { window.location.hash = target; }
     };
 
     /*
      * Startup, run after each route has been added.
      *
-     * @origin Where to start, omit for beginning at "/".
+     * @origin Where to start, omit for beginning at '/'.
      */
     dispatch.start = function(origin) {
-        origin = origin || "/";
-        if(!window.location.hash) { window.location.hash = origin; }
+        origin = origin || '/';
+        if (!window.location.hash) { window.location.hash = origin; }
         else { dispatch.run(window.location.hash); }
     };
 
@@ -87,23 +93,25 @@
      * @params Optional parameters to pass to the handler.
      */
     dispatch.run = function(path, params) {
-        if(!path) { path = window.location.hash; }
-        if(!params) { params = {}; }
+        if (!path) { path = window.location.hash; }
+        if (!params) { params = {}; }
 
+        // Find matching route
         var prev  = internal.parse(params.prev, {}).path;
         var next  = internal.parse(path, { prev: prev });
         var route = dispatch.route(next.path);
-        if(!route) { return dispatch.fallback(); }
+        if (!route) { return dispatch.fallback(); }
 
-        var next_parts  = next.path.split("/");
-        var route_parts = route.path.split("/");
-
-        for(var i = 0; i < route_parts.length; i++) {
-            if(route_parts[i].charAt(0) === ":") {
-                next[route_parts[i].substring(1)] = next_parts[i];
+        // Resolve fragments
+        var next_parts  = next.path.split('/');
+        var route_parts = route.path.split('/');
+        for (var i = 0; i < route_parts.length; i++) {
+            if (route_parts[i].charAt(0).match(/:|\*/)) {
+                next[route_parts[i].substring(1)] = next_parts[i] || undefined;
             }
         }
 
+        // Run callbacks
         internal.callbacks(dispatch.before, function() {
             route.handler(next);
             internal.callbacks(dispatch.after);
@@ -129,9 +137,8 @@
      */
     dispatch.route = function(x) {
         var route = routes[names[x] || paths[x] || handlers[x] || x];
-        if(route) { return route; }
+        if (route) { return route; }
         var parsed = internal.parse(x, {}).path;
-
         for (var p in routes) {
             if (routes.hasOwnProperty(p) && routes[p] && routes[p].matcher.test(parsed)) {
                 return routes[p];
@@ -143,9 +150,9 @@
      * @internal Parse an input path.
      */
     internal.parse = function(input, params) {
-        params.path = (input || "")
-            .replace(queryMatch, "")
-            .replace(prefixMatch, "");
+        params.path = (input || '')
+            .replace(queryMatch, '')
+            .replace(prefixMatch, '');
         params.path = decodeURIComponent(params.path);
         return params;
     };
@@ -155,7 +162,7 @@
      */
     internal.callbacks = function(callbacks, after) {
         after = after || function() {};
-        if(callbacks.length === 0) {
+        if (callbacks.length === 0) {
             after(function() {});
         } else {
             callbacks[0](function() {
@@ -168,26 +175,24 @@
      * Listen on the hash change event to trigger routes.
      */
     var prev, next, change = function(event) {
-        dispatch.run(event.newURL, {
-            prev: event.oldURL
-        });
+        dispatch.run(event.newURL, { prev: event.oldURL });
     };
-    if(!('onhashchange' in window)) {
+    if (!('onhashchange' in window)) {
         prev = window.location.href;
         setInterval(function() {
             next = window.location.href;
-            if(prev === next) return;
-            prev = next;
+            if (prev === next) return;
             change.call(window, {
                 type: 'hashchange',
                 newURL: next,
                 oldURL: prev
             });
+            prev = next;
         }, 100);
     } else if (window.addEventListener) {
-        window.addEventListener("hashchange", change, false);
+        window.addEventListener('hashchange', change, false);
     } else if (window.attachEvent) {
-        window.attachEvent("onhashchange", change);
+        window.attachEvent('onhashchange', change);
     }
 
     dispatch.reset();
