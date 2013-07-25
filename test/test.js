@@ -25,7 +25,7 @@ var then = function(fn, num) {
 var i = 0, nav = function(loc) {
     setTimeout(function() {
         window.location.hash = loc;
-    }, ++i * 50);
+    }, ++i * 10);
 };
 
 /* ------------------------------------ */
@@ -67,12 +67,24 @@ add(36, 'run fallback');
 
 add(40, 'optional parameter set');
 add(41, 'optional parameter unset');
+add(42, 'optionals inside routes');
 add(45, 'optional parameters set');
 add(46, 'one of two optionals unset');
 add(47, 'two of two optionals unset');
-add(48, 'optionals inside routes');
+add(48, 'one unset without slash');
+add(49, 'two unset without slash');
+add(50, 'five optional unset');
+add(51, 'required set and optional unset');
+add(52, 'required unset and optional unset');
 
-add(51, 'complex query strings');
+add(60, 'trailing 0');
+add(61, 'trailing 1');
+add(62, 'trailing 2');
+add(63, 'trailing 3');
+add(64, 'trailing 4');
+
+add(99, 'complex query strings');
+
 
 /* ------------------------------------ */
 
@@ -181,19 +193,40 @@ dispatch.on('/opt/41/*bar', function(params) { if(params.bar === undefined) pass
 nav('#/opt/40/o1');
 nav('#/opt/41/');
 
+dispatch.on('/opt/42/*inner/last', function(params) { if(params.inner === 'foo') pass(42); });
+nav('#/opt/42/foo/last');
+
 dispatch.on('/opt/45/*bar/*baz', function(params) { if(params.bar === 'o2' && params.baz === 'o3') pass(45); });
 dispatch.on('/opt/46/*bar/*baz', function(params) { if(params.bar === 'o4' && params.baz === undefined) pass(46); });
 dispatch.on('/opt/47/*bar/*baz', function(params) { if(params.bar === undefined && params.baz === undefined) pass(47); });
+dispatch.on('/opt/48/*bar/*baz', function(params) { if(params.bar === 'one' && params.baz === undefined) pass(48); });
+dispatch.on('/opt/49/*bar/*baz', function(params) { if(params.bar === undefined && params.baz === undefined) pass(49); });
+dispatch.on('/opt/50/*bar/*baz/*boo/*biz/*box', function(params) { pass(50); });
+dispatch.on('/opt/51/:foo/:bar/*baz/*boo/*lal', function(params) { if(params.bar === 'two') pass(51); pass(52); });
+dispatch.on('/opt/52/:foo/:bar/*baz/*boo/*lal', function(params) { fail(52) });
 nav('#/opt/45/o2/o3');
 nav('#/opt/46/o4/');
 nav('#/opt/47/');
+nav('#/opt/48/one');
+nav('#/opt/49');
+nav('#/opt/50/');
+nav('#/opt/51/one/two');
+nav('#/opt/52/noo');
 
-dispatch.on('/opt/48/*inner/last', function(params) { if(params.inner === 'foo') pass(48); });
-nav('#/opt/48/foo/last');
+dispatch.on('/trail/60/', then(pass, 60));
+dispatch.on('/trail/61/', then(pass, 61));
+dispatch.on('/trail/62', then(pass, 62));
+dispatch.on('/trail/63/:a', function(p) { if(p.a === 'a') pass(63); });
+dispatch.on('/trail/64/:b/', function(p) { if(p.b === 'b') pass(64); });
+nav('#/trail/60/');
+nav('#/trail/61');
+nav('#/trail/62/');
+nav('#/trail/63/a/');
+nav('#/trail/64/b');
 
 /* ------------------------------------ */
 
-dispatch.on('/qs/foo/bar', function() { pass(51); });
+dispatch.on('/qs/foo/bar', function() { pass(99); });
 nav('#/qs/foo/bar?asdf=1234/123/$312/qasd/reloaded&foobar=42');
 nav('#/done');
 

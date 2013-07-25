@@ -12,37 +12,49 @@
         fragMatch    = /:([^:\\$]+)/g,
         fragReplace  = '([^\/]+)',
         starMatch    = /\\\*([^\*\\$]+)/g,
-        starReplace  = '([^\/]*)';
+        starReplace  = '?([^\/]*)',
+        endMatch     = /\/$/;
+
+    /*
+     * Reset all routes and callbacks.
+     */
+    dispatch.reset = function() {
+        dispatch.fallback = function() {};
+        dispatch.before = [];
+        dispatch.after = [];
+        routes = {};
+        handlers = {};
+        names = {};
+        paths = {};
+        id = 0;
+    };
 
     /*
      * Add a new route.
      *
      * @name: An optional name for the route.
-     * @path: The path the route should answer to, with optional parameters.
+     * @path: The path the route should answer to, with parameters.
      * @handler: The handler function to call when this route is run.
      */
     dispatch.on = function(name, path, handler) {
-        if (arguments.length === 2) {
-            handler = path;
-            path = name;
-        }
-        if (names[name]) {
-            return;
-        }
+        if (arguments.length === 2) { handler = path; path = name; }
+        if (names[name]) { return; }
 
+        // Create path matcher
         var str = '' + (path || '');
-        var escaped = str
+        var esc = str
             .replace(escapeString, '\\$&')
             .replace(fragMatch, fragReplace)
             .replace(starMatch, starReplace)
-            .replace(starReplace + '\\/', starReplace + '[\/]?');
+            .replace(endMatch, '');
+        var matcher = new RegExp('^' + esc + '/?$');
 
-        var pathMatcher = new RegExp('^' + escaped + '$');
+        // Store route info
         names[name] = paths[path] = handlers[handler] = ++id;
         routes[id] = {
             name: name,
             path: str,
-            matcher: pathMatcher,
+            matcher: matcher,
             handler: handler,
             id: id
         };
@@ -55,7 +67,7 @@
      * @x The name, path or handler of the route to remove.
      */
     dispatch.off = function(x) {
-        if (!x) { return dispatch.reset(); }
+        if (typeof x === 'undefined') { return dispatch.reset(); }
         return !!(delete routes[names[x] || paths[x] || handlers[x] || x]);
     };
 
@@ -76,7 +88,7 @@
     /*
      * Startup, run after each route has been added.
      *
-     * @origin Where to start, omit for beginning at '/'.
+     * @origin Where to start, defaults to '/'.
      */
     dispatch.start = function(origin) {
         origin = origin || '/';
@@ -119,21 +131,7 @@
     };
 
     /*
-     * Reset all routes and callbacks.
-     */
-    dispatch.reset = function() {
-        dispatch.fallback = function() {};
-        dispatch.before = [];
-        dispatch.after = [];
-        routes = {};
-        handlers = {};
-        names = {};
-        paths = {};
-        id = 0;
-    };
-
-    /*
-     * Find a route by its name, path, matcher or handler.
+     * Find a route by its name, path, handler or matcher.
      */
     dispatch.route = function(x) {
         var route = routes[names[x] || paths[x] || handlers[x] || x];
@@ -172,7 +170,8 @@
     };
 
     /*
-     * Listen on the hash change event to trigger routes.
+     * Listen on the hash change event to trigger routes, 
+     * with setInterval fallback for older browsers.
      */
     var prev, next, change = function(event) {
         dispatch.run(event.newURL, { prev: event.oldURL });
@@ -195,6 +194,9 @@
         window.attachEvent('onhashchange', change);
     }
 
+    /* 
+     * Initialize internal state.
+     */
     dispatch.reset();
 
 }(window));
