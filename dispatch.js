@@ -84,6 +84,30 @@
     };
 
     /*
+     * Replace a parameter of the current path,
+     * without running the matching handler.
+     *
+     * @param: The parameter to replace (e.g. ":a").
+     * @value: The new path value to insert.
+     */
+    dispatch.replace = function(param, value) {
+        if (!param || !value) return;
+        var hash  = internal.parse(window.location.hash, {}).path.split('/');
+        var route = dispatch.route(window.location.hash);
+        var path  = route.path.split('/');
+        for (var i = 0; i < path.length; i++) {
+            internal.skipNextChange = false;
+            if (path[i] !== '' + param) continue;
+            if (hash[i] === '' + value) return;
+            hash[i] = value;
+            var next = '#' + hash.join('/');
+            internal.skipNextChange = true;
+            window.location.replace(next);
+            return;
+        }
+    };
+
+    /*
      * Start at a route by changing the hash.
      *
      * @origin: Where to start, defaults to '/'.
@@ -168,11 +192,17 @@
     };
 
     /*
-     * Listen on the hash change event to trigger routes, 
+     * Set to skip the next change event.
+     */
+    internal.skipNextChange = false;
+
+    /*
+     * Listen on the hash change event to trigger routes,
      * with setInterval fallback for older browsers.
      */
     var prev, next, change = function(event) {
-        dispatch.run(event.newURL, { prev: event.oldURL });
+        if (internal.skipNextChange) internal.skipNextChange = false;
+        else dispatch.run(event.newURL, { prev: event.oldURL });
     };
     if (!('onhashchange' in window)) {
         prev = window.location.href;
@@ -192,7 +222,7 @@
         window.attachEvent('onhashchange', change);
     }
 
-    /* 
+    /*
      * Initialize internal state.
      */
     dispatch.reset();

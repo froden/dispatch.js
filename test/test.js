@@ -25,7 +25,7 @@ var then = function(fn, num) {
 var i = 0, nav = function(loc) {
     setTimeout(function() {
         window.location.hash = loc;
-    }, ++i * 10);
+    }, ++i * 30);
 };
 
 /* ------------------------------------ */
@@ -82,6 +82,10 @@ add(61, 'trailing 1');
 add(62, 'trailing 2');
 add(63, 'trailing 3');
 add(64, 'trailing 4');
+
+add(70, 'replace 1');
+add(71, 'replace 2');
+add(72, 'replace 3');
 
 add(99, 'complex query strings');
 
@@ -223,6 +227,37 @@ nav('#/trail/61');
 nav('#/trail/62/');
 nav('#/trail/63/a/');
 nav('#/trail/64/b');
+
+/* ------------------------------------ */
+
+dispatch.on('/rep/70/:a', function(p) {
+    if (p.a === '1') pass(70);
+    if (p.a === '7') fail(70);
+    dispatch.replace(':a', 7);
+    var h = window.location.hash;
+    var t = h.replace(/^#/, '');
+    if (t !== '/rep/70/7') fail(70);
+});
+nav('#/rep/70/1');
+
+dispatch.on('/rep/71/:a/:b/71', function(p) {
+    if (p.b === '2') pass(71);
+    else fail(71);
+})
+dispatch.replace(':a', 7);
+dispatch.replace(':b', 4);
+nav('#/rep/71/1/2/71');
+dispatch.replace(':b', 5);
+
+dispatch.on('/rep/72/:c/1/72', function(p) {
+    dispatch.replace('c', 4);
+    if (p.c === '3') pass(72);
+    else fail(72);
+    dispatch.replace(':x', 5);
+    dispatch.replace(':c', 3);
+    dispatch.replace(':c', 6);
+})
+nav('#/rep/72/3/1/72');
 
 /* ------------------------------------ */
 
