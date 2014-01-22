@@ -233,29 +233,31 @@ nav('#/trail/64/b');
 dispatch.on('/rep/70/:a', function(p) {
     if (p.a === '1') pass(70);
     if (p.a === '7') fail(70);
+    if (p.a === '0') fail(70);
+
     dispatch.replace(':a', 7);
-    var h = window.location.hash;
+    var h = window.location.hash
     var t = h.replace(/^#/, '');
     if (t !== '/rep/70/7') fail(70);
 });
 nav('#/rep/70/1');
 
-dispatch.on('/rep/71/:a/:b/71', function(p) {
-    if (p.b === '2') pass(71);
+dispatch.on('/rep/71/:x/:y/71', function(p) {
+    if (p.y === '2') pass(71);
     else fail(71);
 })
-dispatch.replace(':a', 7);
-dispatch.replace(':b', 4);
+dispatch.replace(':x', 7);
+dispatch.replace(':y', 4);
 nav('#/rep/71/1/2/71');
-dispatch.replace(':b', 5);
+dispatch.replace(':y', 5);
 
 dispatch.on('/rep/72/:c/1/72', function(p) {
-    dispatch.replace('c', 4);
     if (p.c === '3') pass(72);
     else fail(72);
-    dispatch.replace(':x', 5);
-    dispatch.replace(':c', 3);
-    dispatch.replace(':c', 6);
+    dispatch.replace(':c', 0);
+    var h = window.location.hash
+    var t = h.replace(/^#/, '');
+    if (t !== '/rep/72/0/1/72') fail(72);
 })
 nav('#/rep/72/3/1/72');
 

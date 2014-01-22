@@ -91,14 +91,17 @@
      * @value: The new path value to insert.
      */
     dispatch.replace = function(param, value) {
+        param = '' + param;
+        value = '' + value;
         if (!param || !value) return;
         var hash  = internal.parse(window.location.hash, {}).path.split('/');
         var route = dispatch.route(window.location.hash);
+        if (!route) return;
         var path  = route.path.split('/');
         for (var i = 0; i < path.length; i++) {
             internal.skipNextChange = false;
-            if (path[i] !== '' + param) continue;
-            if (hash[i] === '' + value) return;
+            if (path[i] !== param) continue;
+            if (hash[i] === value) return;
             hash[i] = value;
             var next = '#' + hash.join('/');
             internal.skipNextChange = true;
