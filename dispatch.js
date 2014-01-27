@@ -134,8 +134,8 @@
         if (!params) { params = {}; }
 
         // Parse previous and next hash
-        var prev  = internal.parse(params.prev, {}).path;
-        var next  = internal.parse(path, { prev: prev });
+        var prev = internal.parse(params.prev, {}).path;
+        var next = internal.parse(path, { prev: prev });
         if (prev === next.path) { return; }
 
         // Find matching route
