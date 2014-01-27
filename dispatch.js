@@ -94,18 +94,23 @@
         param = '' + param;
         value = '' + value;
         if (!param || !value) return;
-        var hash  = internal.parse(window.location.hash, {}).path.split('/');
-        var route = dispatch.route(window.location.hash);
-        if (!route) return;
-        var path  = route.path.split('/');
-        for (var i = 0; i < path.length; i++) {
+
+        // Find matching route
+        var hash = window.location.hash;
+        var prev = internal.parse(hash, {});
+        var next = dispatch.route(hash);
+        if (!next) return;
+        prev = prev.path.split('/');
+        next = next.path.split('/');
+
+        // Replace first matching param
+        for (var i = 0; i < next.length; i++) {
             internal.skipNextChange = false;
-            if (path[i] !== param) continue;
-            if (hash[i] === value) return;
-            hash[i] = value;
-            var next = '#' + hash.join('/');
+            if (next[i] !== param) continue;
+            if (prev[i] === value) return;
+            prev[i] = value;
             internal.skipNextChange = true;
-            window.location.replace(next);
+            window.location.replace('#' + prev.join('/'));
             return;
         }
     };
@@ -134,20 +139,20 @@
         if (!params) { params = {}; }
 
         // Parse previous and next hash
-        var prev = internal.parse(params.prev, {}).path;
-        var next = internal.parse(path, { prev: prev });
-        if (prev === next.path) { return; }
+        var prev = internal.parse(params.prev, {});
+        var next = internal.parse(path, { prev: prev.path });
+        if (prev.path === next.path) { return; }
 
         // Find matching route
         var route = dispatch.route(next.path);
         if (!route) { return dispatch.fallback(); }
 
         // Resolve parameters
-        var keys = next.path.split('/');
-        var vals = route.path.split('/');
-        for (var i = 0; i < vals.length; i++) {
-            if (vals[i].charAt(0).match(/:|\*/)) {
-                next[vals[i].substring(1)] = keys[i] || undefined;
+        var vals = next.path.split('/');
+        var keys = route.path.split('/');
+        for (var i = 0; i < keys.length; i++) {
+            if (keys[i].charAt(0).match(/:|\*/)) {
+                next[keys[i].substring(1)] = vals[i] || undefined;
             }
         }
 
