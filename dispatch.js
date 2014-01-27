@@ -133,18 +133,21 @@
         if (!path) { path = window.location.hash; }
         if (!params) { params = {}; }
 
-        // Find matching route
+        // Parse previous and next hash
         var prev  = internal.parse(params.prev, {}).path;
         var next  = internal.parse(path, { prev: prev });
+        if (prev === next.path) { return; }
+
+        // Find matching route
         var route = dispatch.route(next.path);
         if (!route) { return dispatch.fallback(); }
 
         // Resolve parameters
-        var next_parts  = next.path.split('/');
-        var route_parts = route.path.split('/');
-        for (var i = 0; i < route_parts.length; i++) {
-            if (route_parts[i].charAt(0).match(/:|\*/)) {
-                next[route_parts[i].substring(1)] = next_parts[i] || undefined;
+        var keys = next.path.split('/');
+        var vals = route.path.split('/');
+        for (var i = 0; i < vals.length; i++) {
+            if (vals[i].charAt(0).match(/:|\*/)) {
+                next[vals[i].substring(1)] = keys[i] || undefined;
             }
         }
 
@@ -175,7 +178,8 @@
     internal.parse = function(input, params) {
         params.path = (input || '')
             .replace(queryMatch, '')
-            .replace(prefixMatch, '');
+            .replace(prefixMatch, '')
+            .replace(endMatch, '');
         params.path = decodeURIComponent(params.path);
         return params;
     };

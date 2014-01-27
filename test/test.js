@@ -87,6 +87,9 @@ add(70, 'replace 1');
 add(71, 'replace 2');
 add(72, 'replace 3');
 
+add(80, 'parse before repeat');
+add(81, 'query does not repeat');
+
 add(99, 'complex query strings');
 
 
@@ -260,6 +263,33 @@ dispatch.on('/rep/72/:c/1/72', function(p) {
     if (t !== '/rep/72/0/1/72') fail(72);
 })
 nav('#/rep/72/3/1/72');
+
+/* ------------------------------------ */
+
+var qs0 = 0;
+dispatch.on('/80', function() {
+    qs0++
+    if (qs0 === 1) pass(80);
+    else fail(80);
+});
+nav('#/80');
+nav('#/80');
+nav('#/80/');
+nav('#/80/');
+nav('#/80');
+
+var qs1 = 0;
+dispatch.on('/81', function() {
+    qs1++
+    if (qs1 === 1) pass(81);
+    else fail(81);
+});
+nav('#/81');
+nav('#/81?a=1');
+nav('#/81?a=1');
+nav('#/81');
+nav('#/81?c=1');
+nav('#/81');
 
 /* ------------------------------------ */
 
