@@ -4,9 +4,13 @@
     var dispatch = window.dispatch = {}, internal = {},
         id, routes, names, paths, handlers;
 
+    /*
+     * Regex matchers.
+     */
     var escapeString = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g,
         queryMatch   = /\?([^#]*)?$/,
         prefixMatch  = /^[^#]*#/,
+        spaceMatch   = /\s+/g,
         fragMatch    = /:([^\/]+)/g,
         fragReplace  = '([^\\/]+)',
         starMatch    = /\\\*([^\/]+)/g,
@@ -141,7 +145,8 @@
         // Parse previous and next hash
         var prev = internal.parse(params.prev, {});
         var next = internal.parse(path, { prev: prev.path });
-        if (prev.path === next.path) { return; }
+        var same = prev.path === next.path;
+        if (prev.path && next.path && same) { return; }
 
         // Find matching route
         var route = dispatch.route(next.path);
@@ -184,7 +189,8 @@
         params.path = (input || '')
             .replace(queryMatch, '')
             .replace(prefixMatch, '')
-            .replace(endMatch, '');
+            .replace(endMatch, '')
+            .replace(spaceMatch, '');
         params.path = decodeURIComponent(params.path);
         return params;
     };
