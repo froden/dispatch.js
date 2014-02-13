@@ -68,4 +68,4 @@ Tested in IE8+ and the latest two versions of other popular browsers.
 
 ## License
 
-MIT
+MIT. See LICENSE.
