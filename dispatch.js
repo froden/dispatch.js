@@ -81,27 +81,48 @@
      * @path: The route to run.
      */
     dispatch.go = function(path) {
-        var current = internal.parse(window.location.hash, {}).path;
-        var target  = internal.parse(path, {}).path;
+        var current = internal.path(window.location.hash, {}).path;
+        var target  = internal.path(path, {}).path;
         if (current === target) { dispatch.run(target); }
         else { window.location.hash = target; }
     };
 
     /*
-     * Replace a parameter of the current path,
-     * without running the matching handler.
+     * Get the current value of a named parameter.
+     */
+    dispatch.get = function(param) {
+        param = '' + param;
+        if (!param) return;
+
+        // Find matching route
+        var hash = window.location.hash;
+        var prev = internal.path(hash, {});
+        var next = dispatch.route(hash);
+        if (!next) return;
+        prev = prev.path.split('/');
+        next = next.path.split('/');
+
+        // Find value of named param
+        for (var i = 0; i < next.length; i++) {
+            if (next[i] === param) return prev[i];
+        }
+    };
+
+    /*
+     * Set (replace) a named parameter in the current path,
+     * without running any of the matching handlers.
      *
      * @param: The parameter to replace (e.g. ":a").
      * @value: The new path value to insert.
      */
-    dispatch.replace = function(param, value) {
+    dispatch.set = dispatch.replace = function(param, value) {
         param = '' + param;
         value = '' + value;
         if (!param || !value) return;
 
         // Find matching route
         var hash = window.location.hash;
-        var prev = internal.parse(hash, {});
+        var prev = internal.path(hash, {});
         var next = dispatch.route(hash);
         if (!next) return;
         prev = prev.path.split('/');
@@ -143,8 +164,8 @@
         if (!params) { params = {}; }
 
         // Parse previous and next hash
-        var prev = internal.parse(params.prev, {});
-        var next = internal.parse(path, { prev: prev.path });
+        var prev = internal.path(params.prev, {});
+        var next = internal.path(path, { prev: prev.path });
         var same = prev.path === next.path;
         if (prev.path && next.path && same) { return; }
 
@@ -174,7 +195,7 @@
     dispatch.route = function(x) {
         var route = routes[names[x] || paths[x] || handlers[x] || x];
         if (route) { return route; }
-        var parsed = internal.parse(x, {}).path;
+        var parsed = internal.path(x, {}).path;
         for (var p in routes) {
             if (routes.hasOwnProperty(p) && routes[p] && routes[p].matcher.test(parsed)) {
                 return routes[p];
@@ -185,7 +206,7 @@
     /*
      * @internal Parse an input path.
      */
-    internal.parse = function(input, params) {
+    internal.path = function(input, params) {
         params.path = (input || '')
             .replace(queryMatch, '')
             .replace(prefixMatch, '')

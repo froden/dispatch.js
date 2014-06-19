@@ -91,6 +91,7 @@ add(72, 'replace 3');
 
 add(80, 'parse before repeat');
 add(81, 'query does not repeat');
+add(82, 'get param value');
 
 add(99, 'complex query strings');
 
@@ -287,7 +288,7 @@ dispatch.replace(':y', 5);
 dispatch.on('/rep/72/:c/1/72', function(p) {
     if (p.c === '3') pass(72);
     else fail(72);
-    dispatch.replace(':c', 0);
+    dispatch.set(':c', 0);
     var h = window.location.hash;
     var t = h.replace(/^#/, '');
     if (t !== '/rep/72/0/1/72') fail(72);
@@ -320,6 +321,15 @@ nav('#/81?a=1');
 nav('#/81');
 nav('#/81?c=1');
 nav('#/81');
+
+dispatch.on('/82/:a/:b', function() {
+    var fst = dispatch.get(':a') === 'one';
+    var snd = dispatch.get(':b') === 'two';
+    var thd = dispatch.get(':c') === undefined;
+    if (fst && snd && thd) pass(82);
+    else fail(82);
+});
+nav('#/82/one/two/');
 
 /* ------------------------------------ */
 
