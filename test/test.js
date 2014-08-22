@@ -92,6 +92,7 @@ add(72, 'replace 3');
 add(80, 'parse before repeat');
 add(81, 'query does not repeat');
 add(82, 'get param value');
+add(83, 'whitespace in location')
 
 add(99, 'complex query strings');
 
@@ -330,6 +331,9 @@ dispatch.on('/82/:a/:b', function() {
     else fail(82);
 });
 nav('#/82/one/two/');
+
+dispatch.on('/83/:a', function(p) { if(p.a === 'a a') pass(83); });
+nav('# /83/a a ')
 
 /* ------------------------------------ */
 
