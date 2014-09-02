@@ -1,0 +1,5 @@
+{
+  "name": "dispatch.router",
+  "version": "1.3.0",
+  "main": "dispatch.js"
+}
